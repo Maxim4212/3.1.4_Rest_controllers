@@ -65,11 +65,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByUsername(String username) {
-        return userDAO.findByUsername(username);
-    }
-
-    @Override
     @PostConstruct
     public void addDefaultUser() {
         Set<Role> roles1 = new HashSet<>();

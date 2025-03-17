@@ -3,6 +3,7 @@ package ru.rest_controllers.controller;
 import ru.rest_controllers.exception.ExceptionInfo;
 import ru.rest_controllers.exception.UserUsernameExistException;
 import ru.rest_controllers.model.User;
+import ru.rest_controllers.security.UserDetailsServiceImpl;
 import ru.rest_controllers.service.RoleService;
 import ru.rest_controllers.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
@@ -21,15 +23,18 @@ import java.util.stream.Collectors;
 public class RestApiController {
 
     private final UserService userService;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    public RestApiController(RoleService roleService, UserService userService) {
+    public RestApiController(RoleService roleService, UserService userService,
+                             UserDetailsServiceImpl userDetailsService) {
         this.userService = userService;
+        this.userDetailsService = userDetailsService;
     }
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getUsers() {
-        return new ResponseEntity<>(userService.findAll(),HttpStatus.OK);
+        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 
     @PostMapping("/users")
@@ -41,7 +46,7 @@ public class RestApiController {
         try {
             userService.save(user);
             return new ResponseEntity<>(HttpStatus.OK);
-        }catch (UserUsernameExistException u) {
+        } catch (UserUsernameExistException u) {
             throw new UserUsernameExistException("User with username exist");
         }
     }
@@ -53,21 +58,21 @@ public class RestApiController {
     }
 
     @GetMapping("users/{id}")
-    public ResponseEntity<User> getUser (@PathVariable("id") long id) {
+    public ResponseEntity<User> getUser(@PathVariable("id") long id) {
         User user = userService.getById(id);
-        return new ResponseEntity<>(user,HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping("/user")
-    public ResponseEntity<User> getUserByUsername (Principal principal) {
-        User user = userService.findByUsername(principal.getName());
-        return new ResponseEntity<>(user,HttpStatus.OK);
+    public ResponseEntity<User> getUserByUsername(Principal principal) {
+        User user = userDetailsService.loadUserByUsername(principal.getName());
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PutMapping("/users/{id}")
     public ResponseEntity<ExceptionInfo> pageEdit(@PathVariable("id") long id,
-                         @Valid @RequestBody User user,
-                         BindingResult bindingResult) {
+                                                  @Valid @RequestBody User user,
+                                                  BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String error = getErrorsFromBindingResult(bindingResult);
             return new ResponseEntity<>(new ExceptionInfo(error), HttpStatus.BAD_REQUEST);
@@ -83,7 +88,7 @@ public class RestApiController {
                 userService.save(user);
             }
             return new ResponseEntity<>(HttpStatus.OK);
-        }catch (UserUsernameExistException u) {
+        } catch (UserUsernameExistException u) {
             throw new UserUsernameExistException("User with username exist");
         }
     }

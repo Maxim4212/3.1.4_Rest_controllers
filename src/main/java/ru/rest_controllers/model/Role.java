@@ -1,7 +1,13 @@
 package ru.rest_controllers.model;
 
 import org.springframework.security.core.GrantedAuthority;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "role")
@@ -51,11 +57,15 @@ public class Role implements GrantedAuthority {
         if (o == null || getClass() != o.getClass()) return false;
 
         Role role = (Role) o;
-        return id != null && id.equals(role.id);
+
+        if (id != null ? !id.equals(role.id) : role.id != null) return false;
+        return this.role != null ? this.role.equals(role.role) : role.role == null;
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (role != null ? role.hashCode() : 0);
+        return result;
     }
 }

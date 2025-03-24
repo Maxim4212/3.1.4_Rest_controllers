@@ -4,7 +4,7 @@ async function editUser(modal, id) {
 
     modal.find('.modal-title').html('Edit user');
 
-    let editButton = `<button  class="btn btn-info" id="editButton">Edit</button>`;
+    let editButton = `<button  class="btn btn-info" id="editButton">Confirm</button>`;
     let closeButton = `<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>`
     modal.find('.modal-footer').append(editButton);
     modal.find('.modal-footer').append(closeButton);
@@ -16,7 +16,7 @@ async function editUser(modal, id) {
                     <label for="userId" class="col-form-label">ID</label>
                     <input type="text" class="form-control username" id="userId" value="${user.userId}" readonly>
                </div>
-                   
+
                <div class="form-group">
                     <label for="username" class="col-form-label">Username</label>
                     <input type="text" class="form-control username" id="username" value="${user.username}">
@@ -46,7 +46,7 @@ async function editUser(modal, id) {
                     <label for="email" class="com-form-label">Email</label>
                     <input type="text" class="form-control" id="email" value="${user.email}">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="roles" class="com-form-label">Role</label>
                     <select multiple id="roles" size="2" class="form-control" style="max-height: 100px">
@@ -105,3 +105,4 @@ async function editUser(modal, id) {
         }
     })
 }
+

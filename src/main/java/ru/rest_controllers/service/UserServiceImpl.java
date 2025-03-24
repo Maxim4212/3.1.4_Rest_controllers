@@ -1,30 +1,22 @@
 package ru.rest_controllers.service;
 
-import ru.rest_controllers.dao.RoleDAO;
 import ru.rest_controllers.dao.UserDAO;
-import ru.rest_controllers.model.Role;
 import ru.rest_controllers.model.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import java.util.HashSet;
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
-@Transactional
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserDAO userDAO;
-    private final RoleDAO roleDAO;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserDAO userDAO, RoleDAO roleDAO, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserDAO userDAO, PasswordEncoder passwordEncoder) {
         this.userDAO = userDAO;
-        this.roleDAO = roleDAO;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -35,47 +27,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> findAll() {
         return userDAO.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User getById(long id) {
-        User user = null;
-        Optional<User> optional = userDAO.findById(id);
-        if (optional.isPresent()) {
-            user = optional.get();
-        }
-        return user;
+        return userDAO.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
     }
 
     @Override
+    @Transactional
     public void save(User user) {
         userDAO.save(passwordCoder(user));
     }
 
     @Override
+    @Transactional
     public void update(User user) {
+        User existingUser = userDAO.findById(user.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + user.getUserId()));
+
+        if (!user.getPassword().equals(existingUser.getPassword())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+
         userDAO.save(user);
     }
 
     @Override
+    @Transactional
     public void deleteById(long id) {
+        if (!userDAO.existsById(id)) {
+            throw new EntityNotFoundException("User not found with id: " + id);
+        }
         userDAO.deleteById(id);
-    }
-
-    @Override
-    @PostConstruct
-    public void addDefaultUser() {
-        Set<Role> roles1 = new HashSet<>();
-        roles1.add(roleDAO.findById(1L).orElse(null));
-        Set<Role> roles2 = new HashSet<>();
-        roles2.add(roleDAO.findById(1L).orElse(null));
-        roles2.add(roleDAO.findById(2L).orElse(null));
-        User user1 = new User("Nikolay", "Ivanov", (byte) 26, "user@mail.com", "user", "user", roles1);
-        User user2 = new User("Ivan", "Nikolayev", (byte) 62, "admin@mail.com", "admin", "admin", roles2);
-        save(user1);
-        save(user2);
     }
 }
 

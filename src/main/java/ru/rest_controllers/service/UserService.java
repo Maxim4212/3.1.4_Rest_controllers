@@ -9,7 +9,6 @@ public interface UserService {
     User getById(long id);
     void save(User user);
     void deleteById(long id);
-    void addDefaultUser();
     void update(User user);
     User passwordCoder(User user);
 }
